@@ -139,7 +139,7 @@ void createTable() {
 
 
 
-int getCountSites() {
+int getCountSitesAll() {
     sqlite3 *db_ptr;
     sqlite3_stmt *stmt;
 
@@ -168,24 +168,33 @@ int getCountSites() {
     exit(EXIT_FAILURE);
 }
 
-Site * getSites() {
+Site * getSites(char *keyword, int *count) {
     sqlite3 *db_ptr;
     char *errMesg;
     int nRows, nCols;
     char **results;
+    char *sql;
 
     if (sqlite3_open("database.db", &db_ptr) != SQLITE_OK){
         printf("Database opening error! \n");
         exit(EXIT_FAILURE);
     }
-
-    char *sql = "SELECT rowid, * FROM sites;";
+    if (keyword == NULL){
+        sql = "SELECT rowid, * FROM sites;";
+    }
+    else{         /*otsib nagu mis oleks täpne vaste*/
+        sql = sqlite3_mprintf("SELECT rowid, * FROM sites WHERE name LIKE '%%%q%%';", keyword);
+    }
+    
+    
     if (sqlite3_get_table(db_ptr, sql, &results, &nRows, &nCols, &errMesg) != SQLITE_OK ){
         printf("%s!\n", errMesg);
         sqlite3_free(errMesg);
         sqlite3_close(db_ptr);
         exit(EXIT_FAILURE);
     }
+
+    *count = nRows;
 
     /*Küsime mälu*/
     Site * sites = malloc(nRows * sizeof(Site));
@@ -279,7 +288,7 @@ int main(void){
 
     Site test = {
         0,
-        "YouTube",
+        "Facebook",
         "https://www.youtube.com/",
         "maria.mets",
         "maria1234"
@@ -287,12 +296,14 @@ int main(void){
 
     save(test);
     
-    Site *sites = getSites();
-    for (int i = 0; i < getCountSites(); i++){
+    int sitecount;
+                      /*NULL ära otsi, või string"" mille järgi otsida"*/
+    Site *sites = getSites(NULL, &sitecount);
+    for (int i = 0; i < sitecount; i++){
         printf("%d, %s, %s, %s, %s \n", sites[i].id, sites[i].name, sites[i].url, sites[i].username, sites[i].password);
     }
 
-    delete(10);
+    //delete(10);
     
     return 0;
     
