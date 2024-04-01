@@ -238,7 +238,37 @@ void delete(int id){
     sqlite3_free(errMesg);
     sqlite3_close(db_ptr);   
 }
+bool userExist(){
+    sqlite3 *db_ptr;
+    sqlite3_stmt *stmt;
 
+    if (sqlite3_open("database.db", &db_ptr) != SQLITE_OK){
+        printf("Database opening error! \n");
+        exit(EXIT_FAILURE);
+    }
+
+    char *sql = "SELECT COUNT (*) FROM key;";
+    if (sqlite3_prepare_v2(db_ptr, sql, -1, &stmt, NULL) == SQLITE_OK){
+        if (sqlite3_step(stmt) == SQLITE_ROW){
+            int rows = sqlite3_column_int(stmt, 0);
+
+            sqlite3_finalize(stmt);
+            sqlite3_close(db_ptr);
+
+            if (rows == 0){
+                return false;
+            }
+            return true;
+            
+        }
+        
+    }
+
+    sqlite3_finalize(stmt);
+    sqlite3_close(db_ptr);
+    
+    exit(EXIT_FAILURE);
+}
 int main(void){
 
     createTable();
