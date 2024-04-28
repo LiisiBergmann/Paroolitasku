@@ -1,3 +1,6 @@
+# How to build and run
+* Run `make` followed by `./output/paroolitasku` 
+
 ## Encryption key derivation
 Public domain C SHA-256 implementation.
 https://github.com/983/SHA-256
