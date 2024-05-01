@@ -14,10 +14,10 @@
 */
 typedef struct Site {
     int id;
-    char name[FIELD_LEN];
-    char url[FIELD_LEN];
-    char username[FIELD_LEN]; 
-    char password[FIELD_LEN];
+    char showname[FIELD_LEN];
+    char showurl[FIELD_LEN];
+    char showuser[FIELD_LEN]; 
+    char showpas[FIELD_LEN];
 } Site;
 
 void setKey(char *key);
@@ -26,7 +26,7 @@ bool checkKey(char * password);
 void save(Site site);
 void createTable();
 int getCountSitesAll();
-Site * getSites(char *keyword, int *count);
-void delete(int id);
+Site *getSites(char *keyword, int *count);
+void deletes(int id);
 bool userExist();
 void test();

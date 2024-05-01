@@ -32,7 +32,7 @@ void getKey(char **key){
         printf("Database opening error! \n");
         exit(EXIT_FAILURE);
     }
-
+/**LIMIT 1 tähendab seda, et siis oleme kindlad, et ta saab ainult ühe rea*/
     char *sql = "SELECT master FROM key LIMIT 1;";
     if (sqlite3_prepare_v2(db_ptr, sql, -1, &stmt, NULL) != SQLITE_OK){
         sqlite3_close(db_ptr);
@@ -44,10 +44,10 @@ void getKey(char **key){
         sqlite3_close(db_ptr);
         exit(EXIT_FAILURE);
     }
+    /**Teeb võtmest koopia, et see oleks saadab ka väljaspool funkstiooni*/
     char *buf = (char*)sqlite3_column_text(stmt, 0);
-    *key = malloc(strlen(buf) + 1 * sizeof(char));
+    *key = malloc(strlen(buf) * sizeof(char));
     strcpy(*key, buf);
-    key[strlen(buf)] = '\0';
 
     sqlite3_finalize(stmt);
     sqlite3_close(db_ptr);
@@ -75,9 +75,9 @@ void save(Site site) {
     char *key;
     getKey(&key);
 
-    aes_ecb_encrypt(site.password, key, 32);
+    aes_ecb_encrypt((unsigned char *)site.showpas, (unsigned char *)key, 32);
    
-    char *sql_stmt = sqlite3_mprintf("INSERT INTO sites (name, url, username, password) VALUES ('%q', '%q', '%q', '%q');", site.name, site.url, site.username, site.password);
+    char *sql_stmt = sqlite3_mprintf("INSERT INTO sites (name, url, username, password) VALUES ('%q', '%q', '%q', '%q');", site.showname, site.showurl, site.showuser, site.showpas);
     if (sqlite3_exec(db_ptr, sql_stmt, 0, 0, &errMesg) != SQLITE_OK){
         printf("%s\n", errMesg);
         sqlite3_free(errMesg);
@@ -147,7 +147,7 @@ int getCountSitesAll() {
     exit(EXIT_FAILURE);
 }
 
-Site * getSites(char *keyword, int *count) {
+Site *getSites(char *keyword, int *count) {
     sqlite3 *db_ptr;
     char *errMesg;
     int nRows, nCols;
@@ -161,7 +161,7 @@ Site * getSites(char *keyword, int *count) {
     if (keyword == NULL){
         sql = "SELECT rowid, * FROM sites;";
     }
-    else{         
+    else{         /*otsib nagu mis oleks täpne vaste*/
         sql = sqlite3_mprintf("SELECT rowid, * FROM sites WHERE name LIKE '%%%q%%';", keyword);
     }
     
@@ -175,30 +175,28 @@ Site * getSites(char *keyword, int *count) {
 
     *count = nRows;
 
-   
+    /*Küsime mälu*/
     Site * sites = malloc(nRows * sizeof(Site));
 
     for (int i = 1; i <= nRows; i++)
     {
+        /**result muutuja on array stringidest
+         * esimesed neli elementi on päis
+         * ja siis tulevad kirjed, nelja kaupa
+        */
+        
         sites[i - 1].id = atoi(results[i * nCols]);
         
 
-        
-        strcpy(sites[i - 1].name, results[i * nCols + 1]); 
-        sites[i - 1].name[strlen(results[i * nCols + 1])] = '\0';
-
-        strcpy(sites[i - 1].url, results[i * nCols + 2]);
-        sites[i - 1].url[strlen(results[i * nCols + 2])] = '\0';
-
-        strcpy(sites[i - 1].username, results[i * nCols + 3]);
-        sites[i - 1].username[strlen(results[i * nCols + 3])] = '\0';
-
-        strcpy(sites[i - 1].password, results[i * nCols + 4]);
-        sites[i - 1].password[strlen(results[i * nCols + 4])] = '\0';
+        /**strncpy funktsioon kopeerib char pointer sisu char arraysse*/
+        strcpy(sites[i - 1].showname, results[i * nCols + 1]); 
+        strcpy(sites[i - 1].showurl, results[i * nCols + 2]);
+        strcpy(sites[i - 1].showuser, results[i * nCols + 3]);
+        strcpy(sites[i - 1].showpas, results[i * nCols + 4]);
 
         char *key;
         getKey(&key);
-        aes_ecb_decrypt(sites[i - 1].password, key, 32);
+        aes_ecb_decrypt((unsigned char *)sites[i - 1].showpas, (unsigned char *)key, 32);
     }
 
     sqlite3_free(errMesg);
@@ -208,7 +206,7 @@ Site * getSites(char *keyword, int *count) {
     return sites;
 }
 
-void delete(int id){
+void deletes(int id){
    sqlite3 *db_ptr;
     char *errMesg = 0;
 
@@ -230,6 +228,7 @@ void delete(int id){
 }
 
 bool userExist(){
+	printf("controlling\n");
     sqlite3 *db_ptr;
     sqlite3_stmt *stmt;
 
@@ -258,7 +257,9 @@ bool userExist(){
     sqlite3_finalize(stmt);
     sqlite3_close(db_ptr);
     
+    printf("close\n");
     exit(EXIT_FAILURE);
+    
 }
 
 void test(){
@@ -280,9 +281,12 @@ void test(){
     save(test);
     
     int sitecount;
+                      /*NULL ära otsi, või string"" mille järgi ot"*/
     Site *sites = getSites(NULL, &sitecount);
     for (int i = 0; i < sitecount; i++){
-        printf("%d, %s, %s, %s, %s \n", sites[i].id, sites[i].name, sites[i].url, sites[i].username, sites[i].password);
+        printf("%d, %s, %s, %s, %s \n", sites[i].id, sites[i].showname, sites[i].showurl, sites[i].showuser, sites[i].showpas);
     }
 
+    deletes(10);
+    
 }
