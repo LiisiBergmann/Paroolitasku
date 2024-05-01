@@ -17,7 +17,7 @@ void ui_start(int argc, char **argv)
 		return;
 	}
 	printf("Builder created\n");	
-    gtk_builder_add_from_file(builder, "paroolitasku2.xml", NULL);
+    gtk_builder_add_from_file(builder, "ui/paroolitasku2.xml", NULL);
     
     createTable();
     
@@ -74,7 +74,7 @@ void open_main()
 		return;
 	}
 	
-    gtk_builder_add_from_file(builder, "paroolitasku2.xml", NULL);
+    gtk_builder_add_from_file(builder, "ui/paroolitasku2.xml", NULL);
     
     window = GTK_WIDGET(gtk_builder_get_object(builder, "info"));
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
@@ -159,7 +159,7 @@ void add_sites(GtkButton * button, gpointer userdata)
     GtkBuilder *builder;
 
     builder = gtk_builder_new();
-    gtk_builder_add_from_file(builder, "paroolitasku2.xml", NULL);
+    gtk_builder_add_from_file(builder, "ui/paroolitasku2.xml", NULL);
 
     window = GTK_WIDGET(gtk_builder_get_object(builder, "paroolid"));
 
@@ -240,7 +240,7 @@ void show_sites(GtkListBox * list, GtkListBoxRow * row, gpointer userdata)
     GtkBuilder *builder;
 
     builder = gtk_builder_new();
-    gtk_builder_add_from_file(builder, "paroolitasku2.xml", NULL);
+    gtk_builder_add_from_file(builder, "ui/paroolitasku2.xml", NULL);
     
     if (row == NULL) {
         printf("Error: Received NULL row pointer in show_sites(). Aborting...\n");
